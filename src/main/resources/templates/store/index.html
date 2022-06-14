@@ -13,9 +13,11 @@
     <div class="row mt-3">
         <div class="col gap-2 d-md-flex justify-content-md-end">
             <a href="/admin" class="btn btn-primary">Admin</a>
-            <a href="/shoppingCart" class="btn btn-outline-primary"><i class="fa fa-shopping-cart ml-2"></i></a>
+            <a href="/shoppingCart" class="btn btn-outline-primary">
+                <span th:text="${numOfProducts} + ' '"></span>
+                <i class="fa fa-shopping-cart ml-2"></i>
+            </a>
         </div>
-<!--        <span th:text="${numOfProducts} + ' '"></span>-->
     </div>
     <div class="row">
 <!--        <div class="col">-->
@@ -27,7 +29,7 @@
     </div>
     <div class="row">
         <div class="col-6 mb-3">
-            <form action="#" th:action="@{/search}" method="get">
+            <form th:action="@{/search}" method="get">
                 <div class="input-group">
                     <input type="search" name="name" class="form-control" placeholder="Find a book...">
                     <input type="submit" class="btn btn-outline-primary" value="Search">
@@ -42,8 +44,14 @@
                 <div class="card-body">
                     <h5 class="card-title" th:text="${book.name}"></h5>
                     <p class="card-text" th:text="${#numbers.formatDecimal((book.price - book.price * book.discount/100), 1, 2)} + ' $'"></p>
-                    <a href="/addToCart" class="btn btn-primary">Add to cart</a>
-                </div>
+                    <div>
+                        <p th:if="${book.quantity} == 0"><b>Out of stock!</b></p>
+                        <form th:unless="${book.quantity} == 0" th:action="@{/addToCart}" th:object="${book}" method="post">
+                            <input type="hidden" name="id" th:value="${book.id}">
+                            <input class="btn btn-primary" type="submit" value="Add to cart" />
+                        </form>
+                    </div>
+                </p>
             </div>
         </div>
     </div>

@@ -1,30 +1,64 @@
 package hac.ex4.beans;
 
+import hac.ex4.repo.Book;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.SessionScope;
-
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 @Component
 public class ShoppingCart implements Serializable {
-    private ArrayList<String> shoppingCart;
+    private HashMap<Book, Integer> shoppingCart;
 
-    public ShoppingCart() {
-        this.shoppingCart = new ArrayList<>();
-    }
+    public ShoppingCart() { this.shoppingCart = new HashMap<Book, Integer>(); }
 
-    public ArrayList<String>  getShoppingCart() {
+    public HashMap<Book, Integer> getShoppingCart() {
         return shoppingCart;
     }
 
-    public void setShoppingCart(ArrayList<String>  shoppingCart) {
+    public void setShoppingCart(HashMap<Book, Integer> shoppingCart) {
         this.shoppingCart = shoppingCart;
     }
 
-    public void add (String product) {
-        shoppingCart.add(product);
+    public void add(Book book) {
+        boolean isFound = false;
+
+        for (Book currBook : shoppingCart.keySet()) {
+            if(currBook.getId() == book.getId()){
+                shoppingCart.put(currBook, shoppingCart.get(currBook) + 1);
+                isFound = true;
+                break;
+            }
+        }
+        if(!isFound){
+            shoppingCart.put(book, 1);
+        }
+    }
+
+    public Double getTotalSum(){
+        double totalSum = 0.0;
+
+        for(Book book : shoppingCart.keySet()){
+            totalSum += (book.getPrice() - (book.getPrice() * (book.getDiscount()/100))) * shoppingCart.get(book);
+        }
+        return totalSum;
+    }
+
+    public void delete(Book book) {
+        if(shoppingCart.get(book) > 1) {
+            shoppingCart.put(book, shoppingCart.get(book) - 1);
+        } else {
+            shoppingCart.remove(book);
+        }
+    }
+
+    public Integer getShoppingCartSize() {
+        int size = 0;
+        for (Book book : shoppingCart.keySet()) {
+            size += shoppingCart.get(book);
+        }
+        return size;
     }
 
     @Bean
@@ -33,3 +67,4 @@ public class ShoppingCart implements Serializable {
         return new ShoppingCart();
     }
 }
+
