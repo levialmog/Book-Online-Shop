@@ -2,6 +2,8 @@ package hac.ex4.controllers;
 
 import hac.ex4.repo.Book;
 import hac.ex4.repo.BookRepository;
+import hac.ex4.repo.Payment;
+import hac.ex4.repo.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +21,12 @@ public class AdminController {
         return repository;
     }
 
+    @Autowired
+    private PaymentRepository paymentRepository;
+    private PaymentRepository getRepoPayment() {
+        return paymentRepository;
+    }
+
     @GetMapping("")
     public String main(Model model) {
         model.addAttribute("books", getRepo().findAll());
@@ -26,7 +34,7 @@ public class AdminController {
     }
 
     @GetMapping("/addBook")
-    public String addBook(Book book, Model model) {
+    public String addBookGet(Book book, Model model) {
         model.addAttribute("action", "/admin/add");
         model.addAttribute("title", "Add Book");
         return "admin/book_form";
@@ -38,15 +46,13 @@ public class AdminController {
     }
 
     @PostMapping("/add")
-    public String add(@Valid Book book, BindingResult result, Model model) {
+    public String addPost(@Valid Book book, BindingResult result, Model model) {
         if (result.hasErrors()) {
             return "admin/book_form";
         }
-
         if(Objects.equals(book.getImage(), "")){
             book.setImage("default_image.png");
         }
-
         getRepo().save(book);
         model.addAttribute("books", getRepo().findAll());
         return "redirect:/admin";
@@ -58,7 +64,7 @@ public class AdminController {
     }
 
     @PostMapping("/delete")
-    public String deleteBook(@RequestParam("id") long id, Model model) {
+    public String deletePost(@RequestParam("id") long id, Model model) {
         Book book = getRepo()
                 .findById(id)
                 .orElseThrow(
@@ -75,7 +81,7 @@ public class AdminController {
     }
 
     @PostMapping("/updateBook")
-    public String updateBook(@RequestParam("id") long id, Model model) {
+    public String updateBookPost(@RequestParam("id") long id, Model model) {
         Book book = getRepo()
                 .findById(id)
                 .orElseThrow(
@@ -93,7 +99,7 @@ public class AdminController {
     }
 
     @PostMapping("/update/{id}")
-    public String update(@PathVariable("id") long id, @Valid Book book, BindingResult result, Model model) {
+    public String updatePost(@PathVariable("id") long id, @Valid Book book, BindingResult result, Model model) {
         if (result.hasErrors()) {
             book.setId(id);
             model.addAttribute("book", book);
@@ -101,13 +107,22 @@ public class AdminController {
             model.addAttribute("action", "/admin/update/" + book.getId());
             return "admin/book_form";
         }
-
         if(Objects.equals(book.getImage(), "")){
             book.setImage("default_image.png");
         }
-
         getRepo().save(book);
         model.addAttribute("books", getRepo().findAll());
         return "redirect:/admin";
+    }
+
+    @GetMapping("/payments")
+    public String paymentsGet(Model model) {
+        model.addAttribute("payments", getRepoPayment().findByOrderByDatetime());
+        double sum = 0;
+        for(Payment payment : getRepoPayment().findByOrderByDatetime()){
+            sum += payment.getAmount();
+        }
+        model.addAttribute("sum", sum);
+        return "admin/payments";
     }
 }

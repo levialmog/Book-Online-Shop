@@ -2,13 +2,18 @@ package hac.ex4.beans;
 
 import hac.ex4.repo.Book;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.annotation.SessionScope;
+import org.springframework.web.context.WebApplicationContext;
 import java.io.Serializable;
 import java.util.HashMap;
 
 @Component
 public class ShoppingCart implements Serializable {
+
+    private static final long serialVersionUID = -3084341050809484186L;
+
     private HashMap<Book, Integer> shoppingCart;
 
     public ShoppingCart() { this.shoppingCart = new HashMap<Book, Integer>(); }
@@ -45,11 +50,16 @@ public class ShoppingCart implements Serializable {
         return totalSum;
     }
 
-    public void delete(Book book) {
-        if(shoppingCart.get(book) > 1) {
-            shoppingCart.put(book, shoppingCart.get(book) - 1);
-        } else {
-            shoppingCart.remove(book);
+    public void delete(long id) {
+        for (Book book : shoppingCart.keySet()) {
+            if(book.getId() == id){
+                if(shoppingCart.get(book) > 1) {
+                    shoppingCart.put(book, shoppingCart.get(book) - 1);
+                } else {
+                    shoppingCart.remove(book);
+                }
+                break;
+            }
         }
     }
 
@@ -61,10 +71,10 @@ public class ShoppingCart implements Serializable {
         return size;
     }
 
-    @Bean
-    @SessionScope
-    public ShoppingCart sessionShoppingCart() {
-        return new ShoppingCart();
-    }
+//    @Bean
+//    @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
+//    public ShoppingCart sessionShoppingCart() {
+//        return new ShoppingCart();
+//    }
 }
 

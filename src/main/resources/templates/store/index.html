@@ -20,9 +20,6 @@
         </div>
     </div>
     <div class="row">
-<!--        <div class="col">-->
-<!--            <img src="book_store.png" alt="Book Store Image" width="200" height="200">-->
-<!--        </div>-->
         <div class="col">
             <h1>Book Store</h1>
         </div>
@@ -31,7 +28,7 @@
         <div class="col-6 mb-3">
             <form th:action="@{/search}" method="get">
                 <div class="input-group">
-                    <input type="search" name="name" class="form-control" placeholder="Find a book...">
+                    <input type="text" id="query" name="query" class="form-control" placeholder="Find a book...">
                     <input type="submit" class="btn btn-outline-primary" value="Search">
                 </div>
             </form>
@@ -47,11 +44,11 @@
                     <div>
                         <p th:if="${book.quantity} == 0"><b>Out of stock!</b></p>
                         <form th:unless="${book.quantity} == 0" th:action="@{/addToCart}" th:object="${book}" method="post">
-                            <input type="hidden" name="id" th:value="${book.id}">
+                            <input type="hidden" name="id" th:value="${book.id}"/>
                             <input class="btn btn-primary" type="submit" value="Add to cart" />
                         </form>
                     </div>
-                </p>
+                </div>
             </div>
         </div>
     </div>

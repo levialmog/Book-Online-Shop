@@ -5,5 +5,5 @@ import java.util.List;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
     List<Book> findFirst5ByOrderByDiscountDesc();
-    List<Book> findByNameIsLike(String name);
+    List<Book> findByNameContains(String name);
 }

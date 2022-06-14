@@ -1,9 +1,13 @@
 package hac.ex4.controllers;
 
 import hac.ex4.beans.ShoppingCart;
+import hac.ex4.listeners.SessionListenerCounter;
 import hac.ex4.repo.Book;
 import hac.ex4.repo.BookRepository;
+import hac.ex4.repo.Payment;
+import hac.ex4.repo.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +23,13 @@ public class MainController {
         return repository;
     }
 
-    @Resource(name = "sessionShoppingCart")
+    @Autowired
+    private PaymentRepository paymentRepository;
+    private PaymentRepository getRepoPayment() {
+        return paymentRepository;
+    }
+
+    @Resource(name = "sessionBeanExample")
     private ShoppingCart sessionShoppingCart;
 
     @GetMapping("/")
@@ -29,10 +39,9 @@ public class MainController {
         return "store/index";
     }
 
-    @GetMapping("/search{name}")
-    public String searchByNameGet(@PathVariable("name") String name, Model model) {
-        model.addAttribute("name", name);
-        model.addAttribute("top5", getRepo().findByNameIsLike(name));
+    @GetMapping("/search")
+    public String searchByNameGet(@RequestParam("query") String query, Model model) {
+        model.addAttribute("searchResults", getRepo().findByNameContains(query));
         return "/store/search_results";
     }
 
@@ -66,12 +75,7 @@ public class MainController {
 
     @PostMapping("/shoppingCart/delete")
     public String deleteBook(@RequestParam("id") long id, Model model) {
-        Book book = getRepo()
-                .findById(id)
-                .orElseThrow(
-                        () -> new IllegalArgumentException("Invalid user Id:" + id)
-                );
-        sessionShoppingCart.delete(book);
+        sessionShoppingCart.delete(id);
         return "redirect:/shoppingCart";
     }
 
@@ -79,6 +83,34 @@ public class MainController {
     public String clearCartGet(HttpServletRequest request) {
         request.getSession().invalidate();
         return "redirect:/shoppingCart";
+    }
+
+    @GetMapping("/shoppingCart/pay")
+    public String payGet(Model model) {
+        if(sessionShoppingCart.getTotalSum() != 0) {
+            for (Book currBook : sessionShoppingCart.getShoppingCart().keySet()) {
+                 Book book = getRepo()
+                        .findById(currBook.getId())
+                        .orElseThrow(
+                                () -> new IllegalArgumentException("Invalid user Id:" + currBook.getId())
+                        );
+                if (currBook.getQuantity() < sessionShoppingCart.getShoppingCart().get(currBook)) {
+                    sessionShoppingCart.getShoppingCart().put(currBook, currBook.getQuantity());
+                }
+                book.setQuantity(book.getQuantity() - sessionShoppingCart.getShoppingCart().get(currBook));
+                getRepo().save(book);
+            }
+            getRepoPayment().save(new Payment(sessionShoppingCart.getTotalSum()));
+        }
+        return "redirect:/shoppingCart/receipt";
+    }
+
+    @GetMapping("/shoppingCart/receipt")
+    public String receiptGet(HttpServletRequest request, Model model) {
+        model.addAttribute("shoppingCart", sessionShoppingCart.getShoppingCart());
+        model.addAttribute("totalSum", sessionShoppingCart.getTotalSum());
+        request.getSession().invalidate();
+        return "store/receipt";
     }
 
     @RequestMapping("/403")
