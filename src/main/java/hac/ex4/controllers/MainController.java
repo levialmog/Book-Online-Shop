@@ -13,21 +13,33 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * The department is the controller of the store.
+ * Performs operations and returns pages for store addresses.
+ */
 @Controller
 public class MainController {
-
+    /**
+     * Inject via its type the Book repo bean.
+     */
     @Autowired
     private BookRepository repository;
     private BookRepository getRepo() {
         return repository;
     }
 
+    /**
+     * Inject via its type the Payment repo bean.
+     */
     @Autowired
     private PaymentRepository paymentRepository;
     private PaymentRepository getRepoPayment() {
         return paymentRepository;
     }
 
+    /**
+     * Inject via its type the Shopping Cart repo bean.
+     */
     @Autowired
     private ShoppingCartService shoppingCartService;
 

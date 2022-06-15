@@ -12,15 +12,25 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.Objects;
 
+/**
+ * The department is the controller of the admin.
+ * Performs operations and returns pages for admin addresses.
+ */
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
+    /**
+     * Inject via its type the Book repo bean.
+     */
     @Autowired
     private BookRepository repository;
     private BookRepository getRepo() {
         return repository;
     }
 
+    /**
+     * Inject via its type the Payment repo bean.
+     */
     @Autowired
     private PaymentRepository paymentRepository;
     private PaymentRepository getRepoPayment() {
