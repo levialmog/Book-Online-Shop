@@ -1,5 +1,7 @@
 package hac.ex4.repo;
 
+import org.hibernate.validator.constraints.Length;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -18,6 +20,7 @@ public class Book implements Serializable {
     @NotBlank(message = "Name is mandatory")
     private String name;
 
+    @Length(message = "Image url length should be a maximum of 255 characters!", max = 255)
     private String image;
 
     @NotNull(message = "Quantity is mandatory")
@@ -52,14 +55,13 @@ public class Book implements Serializable {
         this.image = image.trim();
     }
     public void setQuantity(Integer quantity) {
+        if(quantity < 0){
+            throw new IllegalArgumentException(name);
+        }
         this.quantity = quantity;
     }
-    public void setPrice(Double price) {
-        this.price = price;
-    }
-    public void setDiscount(Double discount) {
-        this.discount = discount;
-    }
+    public void setPrice(Double price) {this.price = price;}
+    public void setDiscount(Double discount) {this.discount = discount;}
 
     public long getId() {
         return id;

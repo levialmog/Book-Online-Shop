@@ -1,13 +1,12 @@
 package hac.ex4.controllers;
 
 import hac.ex4.beans.ShoppingCart;
-import hac.ex4.listeners.SessionListenerCounter;
 import hac.ex4.repo.Book;
 import hac.ex4.repo.BookRepository;
 import hac.ex4.repo.Payment;
 import hac.ex4.repo.PaymentRepository;
+import hac.ex4.services.ShoppingCartService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +28,10 @@ public class MainController {
         return paymentRepository;
     }
 
-    @Resource(name = "sessionBeanExample")
+    @Autowired
+    private ShoppingCartService shoppingCartService;
+
+    @Resource(name = "sessionShoppingCart")
     private ShoppingCart sessionShoppingCart;
 
     @GetMapping("/")
@@ -81,35 +83,40 @@ public class MainController {
 
     @GetMapping("/shoppingCart/clearCart")
     public String clearCartGet(HttpServletRequest request) {
-        request.getSession().invalidate();
+        sessionShoppingCart.clearShoppingCart();
         return "redirect:/shoppingCart";
     }
 
     @GetMapping("/shoppingCart/pay")
     public String payGet(Model model) {
-        if(sessionShoppingCart.getTotalSum() != 0) {
-            for (Book currBook : sessionShoppingCart.getShoppingCart().keySet()) {
-                 Book book = getRepo()
-                        .findById(currBook.getId())
-                        .orElseThrow(
-                                () -> new IllegalArgumentException("Invalid user Id:" + currBook.getId())
-                        );
-                if (currBook.getQuantity() < sessionShoppingCart.getShoppingCart().get(currBook)) {
-                    sessionShoppingCart.getShoppingCart().put(currBook, currBook.getQuantity());
-                }
-                book.setQuantity(book.getQuantity() - sessionShoppingCart.getShoppingCart().get(currBook));
-                getRepo().save(book);
+        try{
+            shoppingCartService.updateStock();
+            if(sessionShoppingCart.getTotalSum() == 0){
+                throw new IllegalStateException();
             }
             getRepoPayment().save(new Payment(sessionShoppingCart.getTotalSum()));
+            return "redirect:/shoppingCart/receipt";
         }
-        return "redirect:/shoppingCart/receipt";
+        catch (IllegalArgumentException e){
+            model.addAttribute("books", sessionShoppingCart.getShoppingCart());
+            model.addAttribute("totalSum", sessionShoppingCart.getTotalSum());
+            model.addAttribute("error", "The purchase was canceled because the book \"" + e.getMessage() + "\"" +
+                    " is not available in sufficient quantity for your request.");
+            return "store/shopping_cart";
+        }
+        catch (IllegalStateException e){
+            model.addAttribute("books", sessionShoppingCart.getShoppingCart());
+            model.addAttribute("totalSum", sessionShoppingCart.getTotalSum());
+            model.addAttribute("error", "It is not possible to make a purchase for 0 $");
+            return "store/shopping_cart";
+        }
     }
 
     @GetMapping("/shoppingCart/receipt")
-    public String receiptGet(HttpServletRequest request, Model model) {
+    public String receiptGet(Model model) {
         model.addAttribute("shoppingCart", sessionShoppingCart.getShoppingCart());
         model.addAttribute("totalSum", sessionShoppingCart.getTotalSum());
-        request.getSession().invalidate();
+        sessionShoppingCart.clearShoppingCart();
         return "store/receipt";
     }
 

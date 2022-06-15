@@ -7,22 +7,40 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.Hashtable;
 
+/**
+ * This is a bean class instantiated in session.
+ * It represents the shopping cart of a single user.
+ * Contains a hashtable which holds the type of book and the quantity
+ * that the user wants to purchase.
+ * The class contains the functionality of the shopping cart.
+ */
 @Component
 public class ShoppingCart implements Serializable {
 
     private static final long serialVersionUID = -3084341050809484186L;
 
-    private HashMap<Book, Integer> shoppingCart;
+    private Hashtable<Book, Integer> shoppingCart;
 
-    public ShoppingCart() { this.shoppingCart = new HashMap<Book, Integer>(); }
+    /**
+     * The constructor of the class.
+     */
+    public ShoppingCart() { this.shoppingCart = new Hashtable<>(); }
 
-    public HashMap<Book, Integer> getShoppingCart() {
+    /**
+     * Returns the shopping cart.
+     * @return A hashtable which represents the shopping cart.
+     */
+    public Hashtable<Book, Integer> getShoppingCart() {
         return shoppingCart;
     }
 
-    public void setShoppingCart(HashMap<Book, Integer> shoppingCart) {
+    /**
+     * Sets the shopping cart with a shopping cart received.
+     * @param shoppingCart
+     */
+    public void setShoppingCart(Hashtable<Book, Integer> shoppingCart) {
         this.shoppingCart = shoppingCart;
     }
 
@@ -71,10 +89,12 @@ public class ShoppingCart implements Serializable {
         return size;
     }
 
-//    @Bean
-//    @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
-//    public ShoppingCart sessionShoppingCart() {
-//        return new ShoppingCart();
-//    }
+    public void clearShoppingCart() {shoppingCart.clear();}
+
+    @Bean
+    @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public ShoppingCart sessionShoppingCart() {
+        return new ShoppingCart();
+    }
 }
 

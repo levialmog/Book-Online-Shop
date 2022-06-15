@@ -8,7 +8,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.Min;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 public class Payment implements Serializable {
@@ -20,7 +20,7 @@ public class Payment implements Serializable {
     private Double amount;
 
     @CreationTimestamp
-    private LocalDateTime datetime;
+    private Date datetime;
 
     public Payment() {}
 
@@ -32,13 +32,13 @@ public class Payment implements Serializable {
         this.id = id;
     }
     public void setAmount(Double amount) { this.amount = amount; }
-    public void setDatetime(LocalDateTime datetime) { this.datetime = datetime; }
+    public void setDatetime(Date datetime) { this.datetime = datetime; }
 
     public long getId() {
         return id;
     }
     public Double getAmount() { return amount; }
-    public LocalDateTime getDatetime() { return datetime; }
+    public Date getDatetime() { return datetime; }
 
     @Override
     public String toString() {
